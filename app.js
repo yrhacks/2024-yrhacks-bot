@@ -103,7 +103,7 @@ const run = async () => {
             options: [
                 {
                     name: "about",
-                    description: "Set or view your profile information",
+                    description: "Set or view your profile information (Minimal md supported; \\n for new line)",
                     type: ApplicationCommandOptionType.Subcommand,
                     options: [
                         {
