@@ -8,6 +8,9 @@ require("dotenv").config();
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 
+const DATABASE = process.env.DATABASE;
+const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
+
 const run = async () => {
     const commands = [
         {
@@ -76,6 +79,18 @@ const run = async () => {
                     type: ApplicationCommandOptionType.Subcommand,
                 },
                 {
+                    name: "rename",
+                    description: "Rename the team name",
+                    type: ApplicationCommandOptionType.Subcommand, options: [
+                        {
+                            name: "name",
+                            description: "New team name",
+                            type: ApplicationCommandOptionType.String,
+                            required: true,
+                        }
+                    ]
+                },
+                {
                     name: "delete",
                     description: "Delete the team you're leading",
                     type: ApplicationCommandOptionType.Subcommand,
@@ -139,6 +154,10 @@ const run = async () => {
 
         if (!interaction.isCommand()) return;
 
+        if (!(await existsUser(interaction.user.username))) {
+            await addUser(interaction.user.username);
+        }
+
         if (interaction.commandName === "ping") {
             await interaction.reply("Pong! <@" + interaction.user.id + ">");
         }
@@ -152,11 +171,54 @@ const run = async () => {
         }
     });
 
-    client.on("guildMemberAdd", member => {
+    client.on("guildMemberAdd", async member => {
         console.log(member.user.username);
+
+        addUser(member.user.username);
     });
 
     client.login(BOT_TOKEN);
+}
+
+const addUser = async (username) => {
+    try {
+        const db = mongoClient.db(DATABASE);
+        const collection = db.collection(HACKER_COLLECTION);
+
+        const existingHacker = await collection.findOne({
+            username: username,
+        });
+
+        if (!existingHacker) {
+            const hacker_data = {
+                username: username,
+                aboutMe: "No information provided...",
+                team: "N/A",
+                leader: false,
+                inTeam: false,
+            };
+
+            const result = await collection.insertOne({ ...hacker_data });
+        }
+    } catch (error) {
+        console.error("Error inserting hacker:", error);
+    }
+}
+
+const existsUser = async (username) => {
+    try {
+        const db = mongoClient.db(DATABASE);
+        const collection = db.collection(HACKER_COLLECTION);
+
+        const existingHacker = await collection.findOne({
+            username: username,
+        });
+
+        return existingHacker ? true : false;
+    } catch (error) {
+        console.error("Error checking hacker:", error);
+    }
+    return false;
 }
 
 run();
