@@ -68,7 +68,7 @@ const run = async () => {
                         {
                             name: "user",
                             description: "Kick user",
-                            type: ApplicationCommandOptionType.String,
+                            type: ApplicationCommandOptionType.User,
                             required: true,
                         }
                     ]
