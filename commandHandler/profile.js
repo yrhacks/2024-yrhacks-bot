@@ -23,41 +23,59 @@ const handleProfile = async (interaction) => {
 
         switch (OPTIONS.getSubcommand()) {
             case "about":
-                const ABOUT_ME = OPTIONS.get("about_me").value.replace(/\\n/g, '\n');
+                {
+                    const ABOUT_ME = OPTIONS.get("about_me").value.replace(/\\n/g, '\n');
 
-                const hackerData = {
-                    aboutMe: ABOUT_ME
+                    const hackerData = {
+                        aboutMe: ABOUT_ME
+                    }
+
+                    const result = await hackerCollection.updateOne(
+                        { username: USERNAME },
+                        { $set: hackerData }
+                    );
+                    ephemeralReply(interaction, interaction.user, `Updated about me to:`, ABOUT_ME);
                 }
-
-                const result = await hackerCollection.updateOne(
-                    { username: USERNAME },
-                    { $set: hackerData }
-                );
-                ephemeralReply(interaction, `Updated about me to:`, ABOUT_ME);
                 break;
             case "view":
-                ephemeralReply(interaction, `Viewing **__${OPTIONS.get("user").user.username}__**'s about page:`,
-                    `
+                {
+                    const USER = OPTIONS.get("user").user;
+
+                    const hacker = await hackerCollection.findOne({
+                        username: USER.username,
+                    });
+
+                    if (!hacker) {
+                        ephemeralReply(interaction, interaction.user, `**__${USER.username}__**'s not found.`);
+                        break;
+                    }
+
+                    ephemeralReply(interaction, USER, `Viewing **__${USER.username}__**'s about page:`,
+                        `
                     __About Me:__
                     ${hacker.aboutMe}
                     `);
+                }
                 break;
         }
     } catch (error) {
         console.error("Error inserting hacker:", error);
-        ephemeralReply(interaction, `Error: Please try again later.`);
+        ephemeralReply(interaction, interaction.user, `Error: Please try again later.`);
     }
 }
 
-const ephemeralReply = async (interaction, message, description) => {
+const ephemeralReply = async (interaction, user, message, description = "") => {
     await interaction.reply({
         embeds: [
             {
                 title: message,
                 description: description,
-                thumbnail: {
-                    url: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.webp`,
-                },
+                thumbnail:
+                    (
+                        description !== "" ? {
+                            url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp`,
+                        } : {}
+                    ),
                 color: "8076741"
             }
         ],
