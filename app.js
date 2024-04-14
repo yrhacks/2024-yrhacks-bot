@@ -185,7 +185,17 @@ const run = async () => {
 
             if (!whitelisted) {
                 try {
-                    await member.user.send(`Womp womp you got kicked!`);
+                    await member.user.send(
+                        `
+# Sorry!
+                    
+You are not whitelisted for YRHacks' Discord Server.
+                    
+> If you believe that this was a mistake:
+> - Please use the contact form at [www.yrhacks.ca](https://yrhacks.ca/#contact).
+> - Or fill out the Google Form posted on the YRHacks Google Classroom to sign up for a team.
+                    `
+                    );
                     member.kick();
                 } catch (error) {
                 }
