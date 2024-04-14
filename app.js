@@ -156,7 +156,7 @@ const run = async () => {
         if (!interaction.isCommand()) return;
 
         if (!(await existsUser(interaction.user.username))) {
-            await addUser(interaction.user.username);
+            await addUser(interaction.member);
         }
 
         if (interaction.commandName === "ping") {
@@ -205,13 +205,15 @@ You are not whitelisted for YRHacks' Discord Server.
             console.error("Error validating hacker:", error);
         }
 
-        addUser(member.user.username);
+        addUser(member);
     });
 
     client.login(BOT_TOKEN);
 }
 
-const addUser = async (username) => {
+const addUser = async (member) => {
+    const username = member.user.username;
+
     try {
         const db = mongoClient.db(DATABASE);
         const hackerCollection = db.collection(HACKER_COLLECTION);
@@ -227,15 +229,20 @@ const addUser = async (username) => {
             });
 
             const { email, discord, ...filteredSignupData } = signupData;
+            const { firstName, lastName } = filteredSignupData;
 
             const hacker_data = {
                 username: username,
+                fullName: `${firstName} ${lastName}`,
                 aboutMe: "No information provided...",
                 team: "N/A",
                 leader: false,
                 inTeam: false,
                 ...filteredSignupData
             };
+
+            member.setNickname(hacker_data.fullName);
+            // .catch(err => console.log(err)); Error catching without try catch
 
             const result = await hackerCollection.insertOne({ ...hacker_data });
         }
