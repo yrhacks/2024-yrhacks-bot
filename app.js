@@ -214,22 +214,30 @@ You are not whitelisted for YRHacks' Discord Server.
 const addUser = async (username) => {
     try {
         const db = mongoClient.db(DATABASE);
-        const collection = db.collection(HACKER_COLLECTION);
+        const hackerCollection = db.collection(HACKER_COLLECTION);
+        const signupCollection = db.collection(SIGNUPS_COLLECTION);
 
-        const existingHacker = await collection.findOne({
+        const existingHacker = await hackerCollection.findOne({
             username: username,
         });
 
         if (!existingHacker) {
+            const signupData = await signupCollection.findOne({
+                discord: username,
+            });
+
+            const { email, discord, ...filteredSignupData } = signupData;
+
             const hacker_data = {
                 username: username,
                 aboutMe: "No information provided...",
                 team: "N/A",
                 leader: false,
                 inTeam: false,
+                ...filteredSignupData
             };
 
-            const result = await collection.insertOne({ ...hacker_data });
+            const result = await hackerCollection.insertOne({ ...hacker_data });
         }
     } catch (error) {
         console.error("Error inserting hacker:", error);
