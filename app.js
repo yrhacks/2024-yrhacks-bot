@@ -10,6 +10,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
+const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
 
 const run = async () => {
     const commands = [
@@ -143,7 +144,7 @@ const run = async () => {
         console.error(error);
     }
 
-    const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+    const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}!`);
@@ -173,6 +174,26 @@ const run = async () => {
 
     client.on("guildMemberAdd", async member => {
         console.log(member.user.username);
+
+        try {
+            const db = mongoClient.db(DATABASE);
+            const collection = db.collection(SIGNUPS_COLLECTION);
+
+            const whitelisted = await collection.findOne({
+                discord: member.user.username,
+            });
+
+            if (!whitelisted) {
+                try {
+                    member.user.send(`Womp womp you got kicked!`);
+                    member.kick();
+                } catch (error) {
+                }
+                return;
+            }
+        } catch (error) {
+            console.error("Error validating hacker:", error);
+        }
 
         addUser(member.user.username);
     });
