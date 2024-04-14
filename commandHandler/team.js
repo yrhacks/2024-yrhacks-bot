@@ -73,8 +73,6 @@ const handleTeam = async (interaction) => {
                 break;
             case "kick":
                 {
-                    const TEAM_MEMBER = OPTIONS.get("user").user.username;
-
                     if (!hacker.inTeam) {
                         ephemeralReply(interaction, `You are not part of a team.`);
                         break;
@@ -83,6 +81,9 @@ const handleTeam = async (interaction) => {
                         ephemeralReply(interaction, `You cannot kick a team member as a member.`);
                         break;
                     }
+
+                    const TEAM_MEMBER = OPTIONS.get("user").user.username;
+
                     if (hacker.username == TEAM_MEMBER) {
                         ephemeralReply(interaction, `You cannot kick yourself.`);
                         break;
@@ -92,8 +93,8 @@ const handleTeam = async (interaction) => {
                         teamName: hacker.team,
                     });
 
-                    if (!team.members.includes(hacker)) {
-                        ephemeralReply(interaction, `\`${OPTIONS.get("user").user.username}\` is not in team \`${hacker.team}\``);
+                    if (!team.members.includes(TEAM_MEMBER)) {
+                        ephemeralReply(interaction, `\`${TEAM_MEMBER}\` is not in team \`${hacker.team}\``);
                         break;
                     }
 
@@ -103,12 +104,22 @@ const handleTeam = async (interaction) => {
                         inTeam: false,
                     }
 
+                    const newMembers = team.members.filter((id) => id !== TEAM_MEMBER);
+                    const newTeamData = {
+                        members: newMembers,
+                    }
+
                     const result = await hackerCollection.updateOne(
                         { username: TEAM_MEMBER },
                         { $set: hackerData }
                     );
 
-                    ephemeralReply(interaction, `Kicked <@${OPTIONS.get("user").value}> from team \`${hacker.team}\`.`);
+                    const result2 = await teamCollection.updateOne(
+                        { teamName: hacker.team },
+                        { $set: newTeamData }
+                    );
+
+                    ephemeralReply(interaction, `Kicked \`${TEAM_MEMBER}\` from team \`${hacker.team}\`.`);
                 }
                 break;
             case "leave":
@@ -121,6 +132,7 @@ const handleTeam = async (interaction) => {
                         ephemeralReply(interaction, `You cannot leave a team as the leader.`);
                         break;
                     }
+
                     const hackerData = {
                         team: "N/A",
                         leader: false,
