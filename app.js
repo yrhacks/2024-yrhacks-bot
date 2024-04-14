@@ -185,7 +185,7 @@ const run = async () => {
 
             if (!whitelisted) {
                 try {
-                    member.user.send(`Womp womp you got kicked!`);
+                    await member.user.send(`Womp womp you got kicked!`);
                     member.kick();
                 } catch (error) {
                 }
