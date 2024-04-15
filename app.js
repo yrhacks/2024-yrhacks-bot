@@ -291,7 +291,7 @@ const run = async () => {
 
         message.delete();
 
-        message.author.send("# Please refrain from using inappropriate language in the YRHack's Discord Server.");
+        message.author.send("# Please refrain from using inappropriate language in the YRHacks Discord Server.");
         
         logAction(message, `<@${message.author.id}>'s message got flagged \`${message.content}\`.`);
     });
