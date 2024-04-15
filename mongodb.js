@@ -11,7 +11,7 @@ const initialize = async () => {
     mongoClient = new MongoClient(mongoURI, {
         serverApi: {
             version: ServerApiVersion.v1,
-            strict: true,
+            strict: false,
             deprecationErrors: true,
         },
     });

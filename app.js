@@ -1,7 +1,10 @@
 const { Client, REST, Routes, GatewayIntentBits, ApplicationCommandOptionType } = require("discord.js");
 const { handleTeam } = require("./commandHandler/team");
 const { handleProfile } = require("./commandHandler/profile");
+const { handleDebug } = require("./commandHandler/debug");
 const { mongoClient } = require("./mongodb");
+const { badges } = require("./json/badges.json");
+const banList = require("./json/bannedwords.json");
 
 require("dotenv").config();
 
@@ -11,6 +14,9 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
 const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
+const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
+
+const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
 
 const run = async () => {
     const commands = [
@@ -58,6 +64,7 @@ const run = async () => {
                             description: "Accept invite",
                             type: ApplicationCommandOptionType.String,
                             required: true,
+                            autocomplete: true,
                         }
                     ]
                 },
@@ -96,6 +103,20 @@ const run = async () => {
                     description: "Delete the team you're leading",
                     type: ApplicationCommandOptionType.Subcommand,
                 },
+                {
+                    name: "view",
+                    description: "View members of your team",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "team",
+                            description: "Name of team to view",
+                            type: ApplicationCommandOptionType.String,
+                            required: false,
+                            autocomplete: true
+                        }
+                    ]
+                },
             ],
         },
         {
@@ -130,6 +151,109 @@ const run = async () => {
                 },
             ],
         },
+        {
+            name: "debug",
+            description: "Bot debug commands",
+            options: [
+                {
+                    name: "forceregister",
+                    description: "Force register a user's information from signup data",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "User to update",
+                            type: ApplicationCommandOptionType.User,
+                            required: true
+                        }
+                    ]
+                },
+                {
+                    name: "forceupdate",
+                    description: "Force update a user's information",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "User to update",
+                            type: ApplicationCommandOptionType.User,
+                            required: true
+                        },
+                        {
+                            name: "key",
+                            description: "Key to update",
+                            type: ApplicationCommandOptionType.String,
+                            required: true
+                        },
+                        {
+                            name: "value",
+                            description: "Value to update to",
+                            type: ApplicationCommandOptionType.String,
+                            required: true
+                        }
+                    ]
+                },
+                {
+                    name: "userdata",
+                    description: "Get a user's raw data",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "The user to get data from",
+                            type: ApplicationCommandOptionType.User,
+                            required: true
+                        }
+                    ]
+                },
+                {
+                    name: "teamdata",
+                    description: "Get a team's raw data",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "team",
+                            description: "The team to get data from",
+                            type: ApplicationCommandOptionType.String,
+                            required: true,
+                            autocomplete: true,
+                        }
+                    ]
+                },
+                {
+                    name: "wipeuser",
+                    description: "Deletes a user from the database",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "The user to get data from",
+                            type: ApplicationCommandOptionType.User,
+                            required: true
+                        }
+                    ]
+                },
+                {   
+                    name: "addbadge",
+                    description: "Adds a badge to a user",
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: "user",
+                            description: "The user to add the badge to",
+                            type: ApplicationCommandOptionType.User,
+                            required: true
+                        },
+                        {
+                            name: "badge",
+                            description: "The badge to add",
+                            type: ApplicationCommandOptionType.String,
+                            required: true
+                        }
+                    ]
+                }
+            ]
+        }
     ];
 
     const rest = new REST({ version: "10" }).setToken(BOT_TOKEN);
@@ -144,14 +268,59 @@ const run = async () => {
         console.error(error);
     }
 
-    const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
+    const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages] });
 
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}!`);
     });
+    
+    client.on("messageCreate", (message) => {
+        if (message.author.bot) return false; 
 
+        let flagged = false;
+
+        message.content.split(" ").forEach((word) => {
+            if (banList.includes(word)) {
+                flagged = true;
+            }
+        });
+
+        if (!flagged) {
+            return;
+        }
+
+        message.delete();
+
+        message.author.send("# Please refrain from using inappropriate language in the YRHack's Discord Server.");
+        
+        logAction(message, `<@${message.author.id}>'s message got flagged \`${message.content}\`.`);
+    });
+    
     client.on("interactionCreate", async interaction => {
-        console.log(interaction.user.username);
+        if (interaction.isAutocomplete()) {
+            const db = mongoClient.db(DATABASE);
+            const collection = db.collection(TEAM_COLLECTION);
+
+            const focusedValue = interaction.options.getFocused();
+
+            if (interaction.options.getSubcommand() == "accept") {
+                const invited = await collection.find({invited: interaction.user.username}).toArray()
+                const names = invited.map(t => t.teamName)
+                const filtered = names.filter((t) => t.startsWith(focusedValue))
+
+                await interaction.respond(
+                    filtered.map(v => ({ name: v, value: v}))
+                )
+            } else {
+                const teams = await collection.distinct('teamName')
+                const filtered = teams.filter((t) => t.startsWith(focusedValue))
+
+                await interaction.respond(
+                    filtered.map(v => ({ name: v, value: v}))
+                )
+            }
+            
+        }
 
         if (!interaction.isCommand()) return;
 
@@ -170,6 +339,10 @@ const run = async () => {
         if (interaction.commandName === "profile") {
             handleProfile(interaction);
         }
+
+        if (interaction.commandName === "debug") {
+            handleDebug(interaction);
+        }
     });
 
     client.on("guildMemberAdd", async member => {
@@ -184,8 +357,7 @@ const run = async () => {
             });
 
             if (!whitelisted) {
-                try {
-                    await member.user.send(
+                await member.user.send(
                         `
 # Sorry!
                     
@@ -195,10 +367,8 @@ You are not whitelisted for YRHacks' Discord Server.
 > - Please use the contact form at [www.yrhacks.ca](https://yrhacks.ca/#contact).
 > - Or fill out the Google Form posted on the YRHacks Google Classroom to sign up for a team.
                     `
-                    );
-                    member.kick();
-                } catch (error) {
-                }
+                ).catch(err => console.log(err));;
+                member.kick();
                 return;
             }
         } catch (error) {
@@ -219,17 +389,21 @@ const addUser = async (member) => {
         const hackerCollection = db.collection(HACKER_COLLECTION);
         const signupCollection = db.collection(SIGNUPS_COLLECTION);
 
-        const existingHacker = await hackerCollection.findOne({
-            username: username,
-        });
+        const existingHacker = await existsUser(username);
 
         if (!existingHacker) {
             const signupData = await signupCollection.findOne({
                 discord: username,
             });
 
-            const { email, discord, ...filteredSignupData } = signupData;
-            const { firstName, lastName } = filteredSignupData;
+            const { firstName, lastName } = signupData;
+            let userBadges = []
+
+            badges.forEach((b) => {
+                if (b.users.includes(member.user.id)) {
+                    userBadges.push(b.badge_emoji)
+                }
+            });
 
             const hacker_data = {
                 username: username,
@@ -238,11 +412,12 @@ const addUser = async (member) => {
                 team: "N/A",
                 leader: false,
                 inTeam: false,
-                ...filteredSignupData
+                badges: userBadges,
+                ...signupData
             };
 
-            member.setNickname(hacker_data.fullName);
-            // .catch(err => console.log(err)); Error catching without try catch
+            member.setNickname(hacker_data.fullName)
+            .catch(err => console.log(err)); // Error catching without try catch
 
             const result = await hackerCollection.insertOne({ ...hacker_data });
         }
@@ -265,6 +440,17 @@ const existsUser = async (username) => {
         console.error("Error checking hacker:", error);
     }
     return false;
+}
+
+const logAction = async (interation, message) => {
+    const channel = interation.client.channels.cache.find(c => c.id == LOG_CHANNEL_ID)
+
+    channel.send({
+        embeds: [{
+            description: message,
+            color: "8076741"
+        }]
+    })
 }
 
 run();

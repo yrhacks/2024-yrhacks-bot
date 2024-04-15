@@ -1,9 +1,11 @@
 const { mongoClient } = require("../mongodb");
+const { badges } = require("../json/badges.json")
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
 const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 
+const ABOUTME_CHARACTER_LIMIT = 150;
 
 const handleProfile = async (interaction) => {
     const OPTIONS = interaction.options;
@@ -26,6 +28,11 @@ const handleProfile = async (interaction) => {
                 {
                     const ABOUT_ME = OPTIONS.get("about_me").value.replace(/\\n/g, '\n');
 
+                    if (ABOUT_ME.length > ABOUTME_CHARACTER_LIMIT) {
+                        ephemeralReply(interaction, interaction.user, "", `About me exceeds character limit (${ABOUTME_CHARACTER_LIMIT} chars).`);
+                        break;
+                    }
+
                     const hackerData = {
                         aboutMe: ABOUT_ME
                     }
@@ -46,15 +53,42 @@ const handleProfile = async (interaction) => {
                     });
 
                     if (!hacker) {
-                        ephemeralReply(interaction, interaction.user, `**__${USER.username}__**'s not found.`);
+                        ephemeralReply(interaction, interaction.user, `**__${USER.username}__**'s about page not found.`);
                         break;
                     }
 
-                    ephemeralReply(interaction, USER, `Viewing **__${USER.username}__**'s about page:`,
+                    let badgeMap = {}
+                    badges.forEach(b => {
+                        badgeMap[b.badge_emoji] = b
+                    });
+                    
+
+                    const badgeStrings = hacker.badges.map((b) => {
+                        let bData = badgeMap[b]
+
+                       return `${bData.badge_emoji} ${bData.badge_name} - ${bData.badge_desc}`
+                    });
+                    ephemeralReply(interaction, USER, `Viewing **__${hacker.fullName}__**'s about page:`,
                         `
-                    __About Me:__
-                    ${hacker.aboutMe}
-                    `);
+                        (@${hacker.username})
+
+                        __School:__ ${hacker.school}
+
+                        __Grade:__ ${hacker.grade}
+
+                        __SHSM Sector:__ ${hacker.sector == "" ? "None" : hacker.sector}
+
+                        __Hackathons attended:__ ${hacker.hackathons}
+
+                        __Team:__ ${hacker.inTeam ? `${hacker.team} (${hacker.leader ? "Admin :crown:" : "Member :computer:"})` : "None"}
+
+                        __About Me:__
+                        ${hacker.aboutMe}
+
+                        ${badgeStrings.length == 0 ? "" : ("__Badges:__\n" + badgeStrings.join("\n"))}
+                        `
+                    
+                    );
                 }
                 break;
         }
@@ -76,10 +110,11 @@ const ephemeralReply = async (interaction, user, message, description = "") => {
                             url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp`,
                         } : {}
                     ),
+                timestamp: new Date().toISOString(),
                 color: "8076741"
             }
         ],
-        ephemeral: true
+        ephemeral: false
     });
 }
 
