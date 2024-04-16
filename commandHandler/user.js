@@ -11,17 +11,9 @@ const handleUser = async (interaction) => {
     const OPTIONS = interaction.options;
     const USERNAME = interaction.user.username;
 
-    console.log(OPTIONS);
-
-
     try {
         const db = mongoClient.db(DATABASE);
         const hackerCollection = db.collection(HACKER_COLLECTION);
-        const teamCollection = db.collection(TEAM_COLLECTION);
-
-        const hacker = await hackerCollection.findOne({
-            username: USERNAME,
-        });
 
         switch (OPTIONS.getSubcommand()) {
             case "about":

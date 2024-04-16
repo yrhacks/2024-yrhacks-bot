@@ -13,9 +13,6 @@ const handleTeam = async (interaction) => {
     const OPTIONS = interaction.options;
     const USERNAME = interaction.user.username;
 
-    console.log(OPTIONS);
-
-
     try {
         const db = mongoClient.db(DATABASE);
         const hackerCollection = db.collection(HACKER_COLLECTION);

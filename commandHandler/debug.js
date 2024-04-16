@@ -1,24 +1,17 @@
 const { mongoClient } = require("../mongodb");
-const util = require("util")
-const { badges } = require("../json/badges.json")
+const { badges } = require("../json/badges.json");
+const util = require("util");
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
 const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
 
-
-const BOT_ADMINS = process.env.BOT_ADMINS.split(", ");
-
-
 const handleDebug = async (interaction) => {
     const OPTIONS = interaction.options;
-    const USERNAME = interaction.user.username;
 
-    console.log(OPTIONS);
-
-    if (!BOT_ADMINS.includes(interaction.user.id)) {
-        ephemeralReply(interaction, "No.")
+    if (!interaction.member.permissions.has("ADMINISTRATOR")) {
+        ephemeralReply(interaction, "Access Denied.")
         return;
     }
 
@@ -26,11 +19,6 @@ const handleDebug = async (interaction) => {
         const db = mongoClient.db(DATABASE);
         const hackerCollection = db.collection(HACKER_COLLECTION);
         const teamCollection = db.collection(TEAM_COLLECTION);
-        const signupCollection = db.collection(SIGNUPS_COLLECTION);
-
-        const hacker = await hackerCollection.findOne({
-            username: USERNAME,
-        });
 
         switch (OPTIONS.getSubcommand()) {
             case "forceregister":

@@ -330,6 +330,8 @@ const run = async () => {
 
         if (!interaction.isCommand()) return;
 
+        console.log(interaction.options);
+
         if (!(await existsUser(interaction.user.username))) {
             await addUser(interaction.member);
         }
