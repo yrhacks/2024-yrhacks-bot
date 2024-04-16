@@ -26,7 +26,7 @@ const handleTeam = async (interaction) => {
             case "create":
                 {
                     if (hacker.inTeam) {
-                        ephemeralReply(interaction, `You are already in a team.`);
+                        reply(interaction, `You are already in a team.`);
                         break;
                     }
                     const TEAM_NAME = OPTIONS.get("name").value;
@@ -36,17 +36,17 @@ const handleTeam = async (interaction) => {
                     });
 
                     if (TEAM_NAME.length > NAME_CHARACTER_LIMIT) {
-                        ephemeralReply(interaction, `Team name exceeds character limit (${NAME_CHARACTER_LIMIT} chars).`);
+                        reply(interaction, `Team name exceeds character limit (${NAME_CHARACTER_LIMIT} chars).`);
                         break;
                     }
 
                     if (!ALLOWED_NAME_REGEX.test(TEAM_NAME)) {
-                        ephemeralReply(interaction, `Team name must only contain alphanumeric characters.`)
+                        reply(interaction, `Team name must only contain alphanumeric characters.`)
                         break;
                     }
 
                     if (team) {
-                        ephemeralReply(interaction, `Team with name **${TEAM_NAME}** already exists.`);
+                        reply(interaction, `Team with name **${TEAM_NAME}** already exists.`);
                         break;
                     }
 
@@ -70,7 +70,7 @@ const handleTeam = async (interaction) => {
 
                     const result2 = await teamCollection.insertOne({ ...teamData });
 
-                    ephemeralReply(interaction, `Created team with name **${TEAM_NAME}**.`);
+                    reply(interaction, `Created team with name **${TEAM_NAME}**.`);
                     logAction(interaction, `**${hacker.fullName}** created team **${TEAM_NAME}**`)
                 }
                 break;
@@ -79,12 +79,12 @@ const handleTeam = async (interaction) => {
                     const INVITED_USER = OPTIONS.get("user").user;
 
                     if (!hacker.inTeam) {
-                        ephemeralReply(interaction, `You are not in a team to send an invite for.`)
+                        reply(interaction, `You are not in a team to send an invite for.`)
                         break;
                     }
 
                     if (!hacker.leader) {
-                        ephemeralReply(interaction, `You need to be a team leader to send an invite!`)
+                        reply(interaction, `You need to be a team leader to send an invite!`)
                         break;
                     }
 
@@ -97,23 +97,23 @@ const handleTeam = async (interaction) => {
                     });
 
                     if (team.members.includes(INVITED_USER.username)) {
-                        ephemeralReply(interaction, `**${invitedHacker.fullName}** is already part of team **${hacker.team}**!`)
+                        reply(interaction, `**${invitedHacker.fullName}** is already part of team **${hacker.team}**!`)
                         break;
                     }
 
                     if (team.invited.includes(INVITED_USER.username)) {
-                        ephemeralReply(interaction, `**${invitedHacker.fullName}** has already been invited to team **${hacker.team}**!`)
+                        reply(interaction, `**${invitedHacker.fullName}** has already been invited to team **${hacker.team}**!`)
                         break;
                     }
 
                     if (invitedHacker.inTeam) {
-                        ephemeralReply(interaction, `**${invitedHacker.fullName}** is already part of team **${invitedHacker.team}**!`)
+                        reply(interaction, `**${invitedHacker.fullName}** is already part of team **${invitedHacker.team}**!`)
                         break;
                     }
 
                     const inviteResult = await teamCollection.updateOne({ teamName: hacker.team }, { $push: { invited: INVITED_USER.username } })
 
-                    ephemeralReply(interaction, `Invited **${invitedHacker.fullName}** to team **${hacker.team}**.`);
+                    reply(interaction, `Invited **${invitedHacker.fullName}** to team **${hacker.team}**.`);
                     logAction(interaction, `**${hacker.fullName}** invited **${invitedHacker.fullName}** to team **${hacker.team}**`)
 
                     await INVITED_USER.send(`**${hacker.fullName}** has invited you to team **${hacker.team}**!
@@ -126,7 +126,7 @@ const handleTeam = async (interaction) => {
                     const teamName = OPTIONS.get("team").value;
 
                     if (hacker.inTeam) {
-                        ephemeralReply(interaction, `You are already in a team!`);
+                        reply(interaction, `You are already in a team!`);
                         break;
                     }
 
@@ -135,12 +135,12 @@ const handleTeam = async (interaction) => {
                     });
 
                     if (!team.invited.includes(hacker.username)) {
-                        ephemeralReply(interaction, `You do not have an invite to this team!`)
+                        reply(interaction, `You do not have an invite to this team!`)
                         break;
                     }
 
                     if (team.members.length >= 4) {
-                        ephemeralReply(interaction, `This team is currently full (4 members max).`)
+                        reply(interaction, `This team is currently full (4 members max).`)
                     }
 
                     const hackerData = {
@@ -157,25 +157,25 @@ const handleTeam = async (interaction) => {
 
                     const result2 = await teamCollection.updateOne({ teamName: teamName }, { $pull: { invited: hacker.username }, $push: { members: hacker.username } })
 
-                    ephemeralReply(interaction, `Accepted invitation to **${teamName}**.`);
+                    reply(interaction, `Accepted invitation to **${teamName}**.`);
                     logAction(interaction, `**${hacker.fullName}** joined team **${teamName}**`)
                 }
                 break;
             case "kick":
                 {
                     if (!hacker.inTeam) {
-                        ephemeralReply(interaction, `You are not part of a team.`);
+                        reply(interaction, `You are not part of a team.`);
                         break;
                     }
                     if (!hacker.leader) {
-                        ephemeralReply(interaction, `You cannot kick a team member as a member.`);
+                        reply(interaction, `You cannot kick a team member as a member.`);
                         break;
                     }
 
                     const TEAM_MEMBER = OPTIONS.get("user").user.username;
 
                     if (hacker.username == TEAM_MEMBER) {
-                        ephemeralReply(interaction, `You cannot kick yourself.`);
+                        reply(interaction, `You cannot kick yourself.`);
                         break;
                     }
 
@@ -184,7 +184,7 @@ const handleTeam = async (interaction) => {
                     });
 
                     if (!team.members.includes(TEAM_MEMBER)) {
-                        ephemeralReply(interaction, `**${TEAM_MEMBER}** is not in team **${hacker.team}**`);
+                        reply(interaction, `**${TEAM_MEMBER}** is not in team **${hacker.team}**`);
                         break;
                     }
 
@@ -213,18 +213,18 @@ const handleTeam = async (interaction) => {
                         { $set: newTeamData }
                     );
 
-                    ephemeralReply(interaction, `Kicked **${kickedHacker.fullName}** from team **${hacker.team}**.`);
+                    reply(interaction, `Kicked **${kickedHacker.fullName}** from team **${hacker.team}**.`);
                     logAction(interaction, `**${hacker.fullName}** kicked **${kickedHacker.fullName}** from team **${hacker.team}**`)
                 }
                 break;
             case "leave":
                 {
                     if (!hacker.inTeam) {
-                        ephemeralReply(interaction, `You are not part of a team.`);
+                        reply(interaction, `You are not part of a team.`);
                         break;
                     }
                     if (hacker.leader) {
-                        ephemeralReply(interaction, `You cannot leave a team as the leader.`);
+                        reply(interaction, `You cannot leave a team as the leader.`);
                         break;
                     }
 
@@ -249,18 +249,18 @@ const handleTeam = async (interaction) => {
                         { $pull: { members: hacker.username } }
                     )
 
-                    ephemeralReply(interaction, `Left from team **${hacker.team}**.`);
+                    reply(interaction, `Left from team **${hacker.team}**.`);
                     logAction(interaction, `**${hacker.fullName}** left team **${hacker.team}**`);
                 }
                 break;
             case "rename":
                 {
                     if (!hacker.inTeam) {
-                        ephemeralReply(interaction, `You are not in a team.`);
+                        reply(interaction, `You are not in a team.`);
                         break;
                     }
                     if (!hacker.leader) {
-                        ephemeralReply(interaction, `You are not the team leader.`);
+                        reply(interaction, `You are not the team leader.`);
                     }
 
                     const TEAM_NAME = OPTIONS.get("name").value;
@@ -270,17 +270,17 @@ const handleTeam = async (interaction) => {
                     });
 
                     if (TEAM_NAME.length > NAME_CHARACTER_LIMIT) {
-                        ephemeralReply(interaction, `Team name exceeds character limit (${NAME_CHARACTER_LIMIT} chars).`);
+                        reply(interaction, `Team name exceeds character limit (${NAME_CHARACTER_LIMIT} chars).`);
                         break;
                     }
 
                     if (!ALLOWED_NAME_REGEX.test(TEAM_NAME)) {
-                        ephemeralReply(interaction, `Team name must only contain alphanumeric characters.`)
+                        reply(interaction, `Team name must only contain alphanumeric characters.`)
                         break;
                     }
 
                     if (team) {
-                        ephemeralReply(interaction, `Team with name **${TEAM_NAME}** already exists.`);
+                        reply(interaction, `Team with name **${TEAM_NAME}** already exists.`);
                         break;
                     }
 
@@ -313,18 +313,18 @@ const handleTeam = async (interaction) => {
                         { $set: teamData }
                     );
 
-                    ephemeralReply(interaction, `Renamed team from **${hacker.team}** to **${OPTIONS.get("name").value}**.`);
+                    reply(interaction, `Renamed team from **${hacker.team}** to **${OPTIONS.get("name").value}**.`);
                     logAction(interaction, `${hacker.fullName} renamed team **${hacker.team}** to **${OPTIONS.get("name").value}**`);
                 }
                 break;
             case "delete":
                 {
                     if (!hacker.inTeam) {
-                        ephemeralReply(interaction, `You are not part of a team.`);
+                        reply(interaction, `You are not part of a team.`);
                         break;
                     }
                     if (!hacker.leader) {
-                        ephemeralReply(interaction, `You cannot leave a team as the leader.`);
+                        reply(interaction, `You cannot leave a team as the leader.`);
                         break;
                     }
                     const team = await teamCollection.findOne({
@@ -345,7 +345,7 @@ const handleTeam = async (interaction) => {
                     });
 
                     const result2 = await teamCollection.deleteOne({ teamName: hacker.team });
-                    ephemeralReply(interaction, `Deleted team.`);
+                    reply(interaction, `Deleted team.`);
                     logAction(interaction, `**${hacker.fullName}** deleted team **${hacker.team}**`);
 
                 }
@@ -355,7 +355,7 @@ const handleTeam = async (interaction) => {
 
                 // User is not in a team & tried viewing own team
                 if (teamName == "N/A") {
-                    ephemeralReply(interaction, `You are not currently in a team. Please join one or specify a team name to view.`);
+                    reply(interaction, `You are not currently in a team. Please join one or specify a team name to view.`);
                     break;
                 }
 
@@ -364,7 +364,7 @@ const handleTeam = async (interaction) => {
                 });
 
                 if (!team) {
-                    ephemeralReply(interaction, `The team **${teamName}** does not exist.`)
+                    reply(interaction, `The team **${teamName}** does not exist.`)
                     break;
                 }
 
@@ -378,18 +378,18 @@ const handleTeam = async (interaction) => {
                     return `${index == 0 ? ":crown:" : ":computer:"} <@${interaction.client.users.cache.find(user => user.username == username).id}>`
                 }))
 
-                ephemeralReply(interaction, `**Team Name:** ${teamName}\n**Members:**\n${members.join("\n")}`)
+                reply(interaction, `**Team Name:** ${teamName}\n**Members:**\n${members.join("\n")}`)
 
                 break;
         }
 
     } catch (error) {
         console.error("Error inserting hacker:", error);
-        ephemeralReply(interaction, `Error: Please try again later.`);
+        reply(interaction, `Error: Please try again later.`);
     }
 }
 
-const ephemeralReply = async (interaction, message) => {
+const reply = async (interaction, message) => {
     await interaction.reply({
         embeds: [
             {
