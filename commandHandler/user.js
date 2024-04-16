@@ -68,27 +68,70 @@ const handleUser = async (interaction) => {
 
                         return `${bData.badge_emoji} ${bData.badge_name} - ${bData.badge_desc}`
                     });
-                    ephemeralReply(interaction, USER, `Viewing **__${hacker.fullName}__**'s about page:`,
-                        `
-                        (@${hacker.username})
 
-                        __School:__ ${hacker.school}
+                    let shsmField = null;
 
-                        __Grade:__ ${hacker.grade}
+                    if (hacker.sector !== "") {
+                        shsmField = {
+                            name: "SHSM Sector:",
+                            value: hacker.sector,
+                            inline: false,
+                        };
+                    }
 
-                        __SHSM Sector:__ ${hacker.sector == "" ? "None" : hacker.sector}
+                    let badgesField = null;
 
-                        __Hackathons attended:__ ${hacker.hackathons}
+                    if (badgeStrings.length != 0) {
+                        badgesField = {
+                            name: "Badges:",
+                            value: badgeStrings.join("\n"),
+                            inline: true,
+                        }
+                    }
 
-                        __Team:__ ${hacker.inTeam ? `${hacker.team} (${hacker.leader ? "Admin :crown:" : "Member :computer:"})` : "None"}
-
-                        __About Me:__
-                        ${hacker.aboutMe}
-
-                        ${badgeStrings.length == 0 ? "" : ("__Badges:__\n" + badgeStrings.join("\n"))}
-                        `
-
-                    );
+                    await interaction.reply({
+                        embeds: [
+                            {
+                                title: `__${hacker.fullName}'s page:__`,
+                                description: `\u200b\n<@${USER.id}> (@${hacker.username})\n\u200b`,
+                                thumbnail: {
+                                    url: `https://cdn.discordapp.com/avatars/${USER.id}/${USER.avatar}.webp`,
+                                },
+                                fields: [
+                                    {
+                                        name: "School:",
+                                        value: hacker.school,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: "Grade:",
+                                        value: hacker.grade,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: "Past Hacks:",
+                                        value: hacker.hackathons,
+                                        inline: true,
+                                    },
+                                    shsmField,
+                                    {
+                                        name: "Team:",
+                                        value: hacker.inTeam ? `${hacker.team} (${hacker.leader ? "Admin :crown:" : "Member :computer:"})` : "None",
+                                        inline: true,
+                                    },
+                                    badgesField,
+                                    {
+                                        name: "About Me:",
+                                        value: hacker.aboutMe,
+                                        inline: false,
+                                    },
+                                ].filter(field => field),
+                                timestamp: new Date().toISOString(),
+                                color: "8076741"
+                            }
+                        ],
+                        ephemeral: false
+                    }).catch(err => console.log(err));
                 }
                 break;
         }
