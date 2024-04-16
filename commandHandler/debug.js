@@ -165,7 +165,7 @@ const ephemeralReply = async (interaction, message) => {
             }
         ],
         ephemeral: true
-    });
+    }).catch(err => console.log(err));
 }
 
 const existsUser = async (username) => {

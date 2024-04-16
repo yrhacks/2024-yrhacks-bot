@@ -7,7 +7,7 @@ const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 
 const ABOUTME_CHARACTER_LIMIT = 150;
 
-const handleProfile = async (interaction) => {
+const handleUser = async (interaction) => {
     const OPTIONS = interaction.options;
     const USERNAME = interaction.user.username;
 
@@ -115,7 +115,7 @@ const ephemeralReply = async (interaction, user, message, description = "") => {
             }
         ],
         ephemeral: false
-    });
+    }).catch(err => console.log(err));
 }
 
-module.exports = { handleProfile };
+module.exports = { handleUser };

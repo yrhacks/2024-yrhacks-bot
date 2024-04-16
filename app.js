@@ -1,6 +1,6 @@
 const { Client, REST, Routes, GatewayIntentBits, ApplicationCommandOptionType } = require("discord.js");
 const { handleTeam } = require("./commandHandler/team");
-const { handleProfile } = require("./commandHandler/profile");
+const { handleUser } = require("./commandHandler/user");
 const { handleDebug } = require("./commandHandler/debug");
 const { mongoClient } = require("./mongodb");
 const { badges } = require("./json/badges.json");
@@ -256,6 +256,12 @@ const run = async () => {
         }
     ];
 
+    const handlerDictionary = {
+        "team": handleTeam,
+        "user": handleUser,
+        "debug": handleDebug,
+    }
+
     const rest = new REST({ version: "10" }).setToken(BOT_TOKEN);
 
     try {
@@ -332,17 +338,17 @@ const run = async () => {
             await interaction.reply("Pong! <@" + interaction.user.id + ">");
         }
 
-        if (interaction.commandName === "team") {
-            handleTeam(interaction);
+        if (handlerDictionary.hasOwnProperty(interaction.commandName)) {
+            handlerDictionary[interaction.commandName](interaction);
+        } else {
+            await interaction.reply({
+                embeds: [{
+                    description: `Command name ${interaction.commandName} not found.`,
+                    color: "8076741"
+                }]
+            }).catch(err => console.log(err));
         }
 
-        if (interaction.commandName === "user") {
-            handleProfile(interaction);
-        }
-
-        if (interaction.commandName === "debug") {
-            handleDebug(interaction);
-        }
     });
 
     client.on("guildMemberAdd", async member => {

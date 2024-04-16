@@ -413,7 +413,7 @@ const logAction = async (interation, message) => {
             description: message,
             color: "8076741"
         }]
-    })
+    }).catch(err => console.log(err));
 }
 
 module.exports = { handleTeam };
