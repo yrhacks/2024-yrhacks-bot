@@ -21,7 +21,7 @@ const handleUser = async (interaction) => {
                     const ABOUT_ME = OPTIONS.get("about_me").value.replace(/\\n/g, '\n');
 
                     if (ABOUT_ME.length > ABOUTME_CHARACTER_LIMIT) {
-                        ephemeralReply(interaction, interaction.user, "", `About me exceeds character limit (${ABOUTME_CHARACTER_LIMIT} chars).`);
+                        ephemeralReply(interaction, "", `About me exceeds character limit (${ABOUTME_CHARACTER_LIMIT} chars).`);
                         break;
                     }
 
@@ -33,7 +33,7 @@ const handleUser = async (interaction) => {
                         { username: USERNAME },
                         { $set: hackerData }
                     );
-                    ephemeralReply(interaction, interaction.user, `Updated about me to:`, ABOUT_ME);
+                    ephemeralReply(interaction, `Updated about me to:`, ABOUT_ME);
                 }
                 break;
             case "view":
@@ -45,7 +45,7 @@ const handleUser = async (interaction) => {
                     });
 
                     if (!hacker) {
-                        ephemeralReply(interaction, interaction.user, `**__${USER.username}__**'s about page not found.`);
+                        ephemeralReply(interaction, "", `**${USER.username}**'s about page not found.`);
                         break;
                     }
 
@@ -133,23 +133,17 @@ const handleUser = async (interaction) => {
     }
 }
 
-const ephemeralReply = async (interaction, user, message, description = "") => {
+const ephemeralReply = async (interaction, message, description = "") => {
     await interaction.reply({
         embeds: [
             {
                 title: message,
                 description: description,
-                thumbnail:
-                    (
-                        description !== "" ? {
-                            url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp`,
-                        } : {}
-                    ),
                 timestamp: new Date().toISOString(),
                 color: "8076741"
             }
         ],
-        ephemeral: false
+        ephemeral: true
     }).catch(err => console.log(err));
 }
 
