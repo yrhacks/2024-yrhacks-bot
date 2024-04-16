@@ -1,9 +1,9 @@
 const { mongoClient } = require("../mongodb");
+const { logAction } = require("../helper/helper");
 const { badges } = require("../json/badges.json")
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
-const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 
 const ABOUTME_CHARACTER_LIMIT = 150;
 
@@ -14,6 +14,10 @@ const handleUser = async (interaction) => {
     try {
         const db = mongoClient.db(DATABASE);
         const hackerCollection = db.collection(HACKER_COLLECTION);
+
+        const hacker = await hackerCollection.findOne({
+            username: USERNAME,
+        });
 
         switch (OPTIONS.getSubcommand()) {
             case "about":
@@ -33,7 +37,9 @@ const handleUser = async (interaction) => {
                         { username: USERNAME },
                         { $set: hackerData }
                     );
+
                     ephemeralReply(interaction, `Updated about me to:`, ABOUT_ME);
+                    logAction(interaction, `**${hacker.fullName}** updated about me to:\n\`\`\`${ABOUT_ME}\`\`\``);
                 }
                 break;
             case "view":

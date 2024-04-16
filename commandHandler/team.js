@@ -1,4 +1,5 @@
 const { mongoClient } = require("../mongodb");
+const { logAction } = require("../helper/helper");
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
@@ -6,8 +7,6 @@ const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 
 const ALLOWED_NAME_REGEX = RegExp("^[A-z0-9 ]*$");
 const NAME_CHARACTER_LIMIT = 30;
-
-const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
 
 const handleTeam = async (interaction) => {
     const OPTIONS = interaction.options;
@@ -399,17 +398,6 @@ const reply = async (interaction, message) => {
             }
         ],
         ephemeral: false
-    }).catch(err => console.log(err));
-}
-
-const logAction = async (interation, message) => {
-    const channel = interation.client.channels.cache.find(c => c.id == LOG_CHANNEL_ID)
-
-    channel.send({
-        embeds: [{
-            description: message,
-            color: "8076741"
-        }]
     }).catch(err => console.log(err));
 }
 
