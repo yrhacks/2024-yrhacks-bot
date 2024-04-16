@@ -120,12 +120,12 @@ const run = async () => {
             ],
         },
         {
-            name: "profile",
-            description: "Profile commands",
+            name: "user",
+            description: "User commands",
             options: [
                 {
                     name: "about",
-                    description: "Set or view your profile information (Minimal md supported; \\n for new line)",
+                    description: "Set or view your user about information (Minimal md supported; \\n for new line)",
                     type: ApplicationCommandOptionType.Subcommand,
                     options: [
                         {
@@ -138,7 +138,7 @@ const run = async () => {
                 },
                 {
                     name: "view",
-                    description: "View a user's profile",
+                    description: "View a user's information",
                     type: ApplicationCommandOptionType.Subcommand,
                     options: [
                         {
@@ -233,7 +233,7 @@ const run = async () => {
                         }
                     ]
                 },
-                {   
+                {
                     name: "addbadge",
                     description: "Adds a badge to a user",
                     type: ApplicationCommandOptionType.Subcommand,
@@ -273,9 +273,9 @@ const run = async () => {
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}!`);
     });
-    
+
     client.on("messageCreate", (message) => {
-        if (message.author.bot) return false; 
+        if (message.author.bot) return false;
 
         let flagged = false;
 
@@ -292,10 +292,10 @@ const run = async () => {
         message.delete();
 
         message.author.send("# Please refrain from using inappropriate language in the YRHacks Discord Server.");
-        
+
         logAction(message, `<@${message.author.id}>'s message got flagged \`${message.content}\`.`);
     });
-    
+
     client.on("interactionCreate", async interaction => {
         if (interaction.isAutocomplete()) {
             const db = mongoClient.db(DATABASE);
@@ -304,22 +304,22 @@ const run = async () => {
             const focusedValue = interaction.options.getFocused();
 
             if (interaction.options.getSubcommand() == "accept") {
-                const invited = await collection.find({invited: interaction.user.username}).toArray()
+                const invited = await collection.find({ invited: interaction.user.username }).toArray()
                 const names = invited.map(t => t.teamName)
                 const filtered = names.filter((t) => t.startsWith(focusedValue))
 
                 await interaction.respond(
-                    filtered.map(v => ({ name: v, value: v}))
+                    filtered.map(v => ({ name: v, value: v }))
                 )
             } else {
                 const teams = await collection.distinct('teamName')
                 const filtered = teams.filter((t) => t.startsWith(focusedValue))
 
                 await interaction.respond(
-                    filtered.map(v => ({ name: v, value: v}))
+                    filtered.map(v => ({ name: v, value: v }))
                 )
             }
-            
+
         }
 
         if (!interaction.isCommand()) return;
@@ -336,7 +336,7 @@ const run = async () => {
             handleTeam(interaction);
         }
 
-        if (interaction.commandName === "profile") {
+        if (interaction.commandName === "user") {
             handleProfile(interaction);
         }
 
@@ -358,7 +358,7 @@ const run = async () => {
 
             if (!whitelisted) {
                 await member.user.send(
-                        `
+                    `
 # Sorry!
                     
 You are not whitelisted for YRHacks' Discord Server.
@@ -417,7 +417,7 @@ const addUser = async (member) => {
             };
 
             member.setNickname(hacker_data.fullName)
-            .catch(err => console.log(err)); // Error catching without try catch
+                .catch(err => console.log(err)); // Error catching without try catch
 
             const result = await hackerCollection.insertOne({ ...hacker_data });
         }

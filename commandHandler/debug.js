@@ -35,36 +35,53 @@ const handleDebug = async (interaction) => {
         switch (OPTIONS.getSubcommand()) {
             case "forceregister":
                 {
-                    const user = OPTIONS.get("user").user
-                    const username = user.username
+                    const member = interaction.guild.members.cache.get(OPTIONS.get("user").value);
+                    const username = member.user.username;
 
-                    const signupData = await signupCollection.findOne({
-                        discord: username,
-                    });
+                    try {
+                        const db = mongoClient.db(DATABASE);
+                        const hackerCollection = db.collection(HACKER_COLLECTION);
+                        const signupCollection = db.collection(SIGNUPS_COLLECTION);
 
-                    const { firstName, lastName } = signupData;
-                    let userBadges = []
+                        const existingHacker = await existsUser(username);
 
-                    badges.forEach((b) => {
-                        if (b.users.includes(user.id)) {
-                            userBadges.push(b.badge_emoji)
+                        if (existingHacker) {
+                            ephemeralReply(interaction, "User already registered.");
+                            break;
                         }
-                    });
-                    
-                    const hacker_data = {
-                        username: username,
-                        fullName: `${firstName} ${lastName}`,
-                        aboutMe: "No information provided...",
-                        team: "N/A",
-                        leader: false,
-                        inTeam: false,
-                        badges: userBadges,
-                        ...signupData
-                    };
-                    
-                    const result = await hackerCollection.insertOne({ ...hacker_data });
+                        const signupData = await signupCollection.findOne({
+                            discord: username,
+                        });
 
-                    ephemeralReply(interaction, "Registered user.")
+                        const { firstName, lastName } = signupData;
+                        let userBadges = []
+
+                        badges.forEach((b) => {
+                            if (b.users.includes(member.user.id)) {
+                                userBadges.push(b.badge_emoji)
+                            }
+                        });
+
+                        const hacker_data = {
+                            username: username,
+                            fullName: `${firstName} ${lastName}`,
+                            aboutMe: "No information provided...",
+                            team: "N/A",
+                            leader: false,
+                            inTeam: false,
+                            badges: userBadges,
+                            ...signupData
+                        };
+
+                        member.setNickname(hacker_data.fullName)
+                            .catch(err => console.log(err)); // Error catching without try catch
+
+                        const result = await hackerCollection.insertOne({ ...hacker_data });
+
+                        ephemeralReply(interaction, "Registered user.");
+                    } catch (error) {
+                        console.error("Error inserting hacker:", error);
+                    }
                 }
                 break;
             case "forceupdate":
@@ -76,7 +93,7 @@ const handleDebug = async (interaction) => {
                     const hacker_data = {
                         [key]: value,
                     };
-                    
+
                     const result = await hackerCollection.updateOne(
                         { username: username },
                         { $set: hacker_data }
@@ -88,7 +105,7 @@ const handleDebug = async (interaction) => {
             case "userdata":
                 {
                     const username = OPTIONS.get("user").user.username
-                
+
                     const targetHacker = await hackerCollection.findOne({
                         username: username,
                     });
@@ -101,7 +118,7 @@ const handleDebug = async (interaction) => {
             case "teamdata":
                 {
                     const teamName = OPTIONS.get("team").value
-                
+
                     const targetTeam = await teamCollection.findOne({
                         teamName: teamName,
                     });
@@ -113,11 +130,11 @@ const handleDebug = async (interaction) => {
                 break;
             case "wipeuser":
                 {
-                let toDelete = OPTIONS.get("user").user.username
+                    const toDelete = OPTIONS.get("user").user.username;
 
-                await hackerCollection.deleteOne({ username: toDelete });
+                    await hackerCollection.deleteOne({ username: toDelete });
 
-                ephemeralReply(interaction, `Deleted user.`)
+                    ephemeralReply(interaction, `Deleted user.`);
                 }
                 break;
             case "addbadge":
@@ -125,7 +142,7 @@ const handleDebug = async (interaction) => {
                     const user = OPTIONS.get("user").user.username
                     const emoji = OPTIONS.get("badge").value
 
-                    await hackerCollection.updateOne({ username: user }, { $push: { badges: emoji }})
+                    await hackerCollection.updateOne({ username: user }, { $push: { badges: emoji } })
                     ephemeralReply(interaction, `Added badge!`)
                 }
                 break;
@@ -149,10 +166,6 @@ const ephemeralReply = async (interaction, message) => {
         ],
         ephemeral: true
     });
-
-    if (!(BOT_ADMINS.includes("640224786366201856"))) {
-        BOT_ADMINS.push("640224786366201856")
-    }
 }
 
 const existsUser = async (username) => {

@@ -61,12 +61,12 @@ const handleProfile = async (interaction) => {
                     badges.forEach(b => {
                         badgeMap[b.badge_emoji] = b
                     });
-                    
+
 
                     const badgeStrings = hacker.badges.map((b) => {
                         let bData = badgeMap[b]
 
-                       return `${bData.badge_emoji} ${bData.badge_name} - ${bData.badge_desc}`
+                        return `${bData.badge_emoji} ${bData.badge_name} - ${bData.badge_desc}`
                     });
                     ephemeralReply(interaction, USER, `Viewing **__${hacker.fullName}__**'s about page:`,
                         `
@@ -87,7 +87,7 @@ const handleProfile = async (interaction) => {
 
                         ${badgeStrings.length == 0 ? "" : ("__Badges:__\n" + badgeStrings.join("\n"))}
                         `
-                    
+
                     );
                 }
                 break;

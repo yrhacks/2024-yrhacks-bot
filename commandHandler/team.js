@@ -33,7 +33,7 @@ const handleTeam = async (interaction) => {
                         break;
                     }
                     const TEAM_NAME = OPTIONS.get("name").value;
- 
+
                     const team = await teamCollection.findOne({
                         teamName: TEAM_NAME,
                     });
@@ -103,7 +103,7 @@ const handleTeam = async (interaction) => {
                         ephemeralReply(interaction, `**${invitedHacker.fullName}** is already part of team **${hacker.team}**!`)
                         break;
                     }
-                    
+
                     if (team.invited.includes(INVITED_USER.username)) {
                         ephemeralReply(interaction, `**${invitedHacker.fullName}** has already been invited to team **${hacker.team}**!`)
                         break;
@@ -114,8 +114,8 @@ const handleTeam = async (interaction) => {
                         break;
                     }
 
-                    const inviteResult = await teamCollection.updateOne({teamName: hacker.team }, { $push: { invited: INVITED_USER.username } })
-                                        
+                    const inviteResult = await teamCollection.updateOne({ teamName: hacker.team }, { $push: { invited: INVITED_USER.username } })
+
                     ephemeralReply(interaction, `Invited **${invitedHacker.fullName}** to team **${hacker.team}**.`);
                     logAction(interaction, `**${hacker.fullName}** invited **${invitedHacker.fullName}** to team **${hacker.team}**`)
 
@@ -136,7 +136,7 @@ const handleTeam = async (interaction) => {
                     const team = await teamCollection.findOne({
                         teamName: teamName,
                     });
-                    
+
                     if (!team.invited.includes(hacker.username)) {
                         ephemeralReply(interaction, `You do not have an invite to this team!`)
                         break;
@@ -156,9 +156,9 @@ const handleTeam = async (interaction) => {
                         { username: hacker.username },
                         { $set: hackerData }
                     );
-                    
 
-                    const result2 = await teamCollection.updateOne({teamName: teamName }, { $pull: { invited: hacker.username }, $push: { members: hacker.username }})
+
+                    const result2 = await teamCollection.updateOne({ teamName: teamName }, { $pull: { invited: hacker.username }, $push: { members: hacker.username } })
 
                     ephemeralReply(interaction, `Accepted invitation to **${teamName}**.`);
                     logAction(interaction, `**${hacker.fullName}** joined team **${teamName}**`)
@@ -230,7 +230,7 @@ const handleTeam = async (interaction) => {
                         ephemeralReply(interaction, `You cannot leave a team as the leader.`);
                         break;
                     }
-                    
+
 
                     const team = await teamCollection.findOne({
                         teamName: hacker.team,
@@ -249,7 +249,7 @@ const handleTeam = async (interaction) => {
 
                     const result2 = await teamCollection.updateOne(
                         { teamName: team.teamName },
-                        { $pull: { members: hacker.username }}
+                        { $pull: { members: hacker.username } }
                     )
 
                     ephemeralReply(interaction, `Left from team **${hacker.team}**.`);
