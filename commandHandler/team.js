@@ -1,5 +1,6 @@
 const { mongoClient } = require("../mongodb");
 const { logAction } = require("../helper/helper");
+const banList = require("../json/bannedwords.json");
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
@@ -47,6 +48,19 @@ const handleTeam = async (interaction) => {
                     if (team) {
                         reply(interaction, `Team with name **${TEAM_NAME}** already exists.`);
                         break;
+                    }
+
+                    let flagged = false;
+
+                    TEAM_NAME.split(" ").forEach((word) => {
+                        if (banList.includes(word)) {
+                            flagged = true;
+                        }
+                    });
+
+                    if (flagged) {
+                        ephemeralReply(interaction, `Your team name must not contain any inappropriate words.`);
+                        return;
                     }
 
                     const hackerData = {
@@ -283,6 +297,19 @@ const handleTeam = async (interaction) => {
                     if (team) {
                         reply(interaction, `Team with name **${TEAM_NAME}** already exists.`);
                         break;
+                    }
+
+                    let flagged = false;
+
+                    TEAM_NAME.split(" ").forEach((word) => {
+                        if (banList.includes(word)) {
+                            flagged = true;
+                        }
+                    });
+
+                    if (flagged) {
+                        ephemeralReply(interaction, `Your about me must not contain any inappropriate words.`);
+                        return;
                     }
 
                     const hackerData = {

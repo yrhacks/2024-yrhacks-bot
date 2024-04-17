@@ -1,6 +1,7 @@
 const { mongoClient } = require("../mongodb");
 const { logAction } = require("../helper/helper");
 const { badges } = require("../json/badges.json")
+const banList = require("../json/bannedwords.json");
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
@@ -23,6 +24,19 @@ const handleUser = async (interaction) => {
             case "about":
                 {
                     const ABOUT_ME = OPTIONS.get("about_me").value.replace(/\\n/g, '\n');
+
+                    let flagged = false;
+
+                    ABOUT_ME.split(" ").forEach((word) => {
+                        if (banList.includes(word)) {
+                            flagged = true;
+                        }
+                    });
+
+                    if (flagged) {
+                        ephemeralReply(interaction, "", `Your about me must not contain any inappropriate words.`);
+                        return;
+                    }
 
                     if (ABOUT_ME.length > ABOUTME_CHARACTER_LIMIT) {
                         ephemeralReply(interaction, "", `About me exceeds character limit (${ABOUTME_CHARACTER_LIMIT} chars).`);
