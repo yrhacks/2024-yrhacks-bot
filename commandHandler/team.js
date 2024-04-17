@@ -139,7 +139,8 @@ const handleTeam = async (interaction) => {
                     }
 
                     if (team.members.length >= 4) {
-                        reply(interaction, `This team is currently full (4 members max).`)
+                        reply(interaction, `This team is currently full (4 members max).`);
+                        break;
                     }
 
                     const hackerData = {
@@ -260,6 +261,7 @@ const handleTeam = async (interaction) => {
                     }
                     if (!hacker.leader) {
                         reply(interaction, `You are not the team leader.`);
+                        break;
                     }
 
                     const TEAM_NAME = OPTIONS.get("name").value;
