@@ -20,6 +20,8 @@ const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 const EXEC_ID = process.env.EXEC_ID;
 const TEACHER_ID = process.env.TEACHER_ID;
 const FORMER_EXEC_ID = process.env.FORMER_EXEC_ID;
+const HACKER_ID = process.env.HACKER_ID;
+const QUARANTINE_ID = process.env.QUARANTINE_ID;
 
 const SERVER_ID = process.env.SERVER_ID;
 const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
@@ -390,10 +392,15 @@ You are not whitelisted for YRHacks' Discord Server.
 > - Please use the contact form at [www.yrhacks.ca](https://yrhacks.ca/#contact).
 > - Or fill out the Google Form posted on the YRHacks Google Classroom to sign up for a team.
                     `
-                ).catch(err => console.log(err));;
-                member.kick();
+                ).catch(err => console.log(err));
+
+                const role = member.guild.roles.cache.find(r => r.id == QUARANTINE_ID);
+                member.roles.add(role);
                 return;
             }
+
+            const role = member.guild.roles.cache.find(r => r.id == HACKER_ID);
+            member.roles.add(role);
         } catch (error) {
             console.error("Error validating hacker:", error);
         }
@@ -419,7 +426,6 @@ You are not whitelisted for YRHacks' Discord Server.
             if (newMember.roles.cache.has(FORMER_EXEC_ID)) {
                 badges.push("Former Exec");
             }
-            console.log(USERNAME)
 
             const result = await hackerCollection.updateOne(
                 { username: USERNAME },
