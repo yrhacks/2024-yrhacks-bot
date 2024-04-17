@@ -355,6 +355,7 @@ const run = async () => {
 
         if (interaction.commandName === "ping") {
             await interaction.reply("Pong! <@" + interaction.user.id + ">");
+            return;
         }
 
         if (handlerDictionary.hasOwnProperty(interaction.commandName)) {
