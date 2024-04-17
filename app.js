@@ -17,6 +17,10 @@ const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
 const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
 const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 
+const EXEC_ID = process.env.EXEC_ID;
+const TEACHER_ID = process.env.TEACHER_ID;
+const FORMER_EXEC_ID = process.env.FORMER_EXEC_ID;
+
 const SERVER_ID = process.env.SERVER_ID;
 const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
 
@@ -397,6 +401,33 @@ You are not whitelisted for YRHacks' Discord Server.
         addUser(member);
     });
 
+    client.on("guildMemberUpdate", async (oldMember, newMember) => {
+        const USERNAME = newMember.user.username;
+
+        if (oldMember.roles.cache.size !== newMember.roles.cache.size) {
+            const db = mongoClient.db(DATABASE);
+            const hackerCollection = db.collection(HACKER_COLLECTION);
+
+            let badges = [];
+
+            if (newMember.roles.cache.has(EXEC_ID)) {
+                badges.push("Executive");
+            }
+            if (newMember.roles.cache.has(TEACHER_ID)) {
+                badges.push("Teacher");
+            }
+            if (newMember.roles.cache.has(FORMER_EXEC_ID)) {
+                badges.push("Former Exec");
+            }
+            console.log(USERNAME)
+
+            const result = await hackerCollection.updateOne(
+                { username: USERNAME },
+                { $set: { badges: badges } }
+            );
+        }
+    });
+
     client.login(BOT_TOKEN);
 }
 
@@ -415,6 +446,18 @@ const addUser = async (member) => {
                 discord: username,
             });
 
+            let badges = [];
+
+            if (member.roles.cache.has(EXEC_ID)) {
+                badges.push("Executive");
+            }
+            if (member.roles.cache.has(TEACHER_ID)) {
+                badges.push("Teacher");
+            }
+            if (member.roles.cache.has(FORMER_EXEC_ID)) {
+                badges.push("Former Exec");
+            }
+
             const { firstName, lastName } = signupData;
 
             const hacker_data = {
@@ -424,7 +467,7 @@ const addUser = async (member) => {
                 team: "N/A",
                 leader: false,
                 inTeam: false,
-                badges: [],
+                badges: badges,
                 ...signupData
             };
 

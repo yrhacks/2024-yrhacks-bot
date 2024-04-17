@@ -7,6 +7,10 @@ const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
 const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
 
+const EXEC_ID = process.env.EXEC_ID;
+const TEACHER_ID = process.env.TEACHER_ID;
+const FORMER_EXEC_ID = process.env.FORMER_EXEC_ID;
+
 const handleDebug = async (interaction) => {
     const OPTIONS = interaction.options;
 
@@ -26,6 +30,11 @@ const handleDebug = async (interaction) => {
                     const member = interaction.guild.members.cache.get(OPTIONS.get("user").value);
                     const username = member.user.username;
 
+                    if (username == interaction.user.username) {
+                        ephemeralReply(interaction, "Registered user.");
+                        break;
+                    }
+
                     try {
                         const db = mongoClient.db(DATABASE);
                         const hackerCollection = db.collection(HACKER_COLLECTION);
@@ -41,6 +50,18 @@ const handleDebug = async (interaction) => {
                             discord: username,
                         });
 
+                        let badges = [];
+
+                        if (member.roles.cache.has(EXEC_ID)) {
+                            badges.push("Executive");
+                        }
+                        if (member.roles.cache.has(TEACHER_ID)) {
+                            badges.push("Teacher");
+                        }
+                        if (member.roles.cache.has(FORMER_EXEC_ID)) {
+                            badges.push("Former Exec");
+                        }
+
                         const { firstName, lastName } = signupData;
 
                         const hacker_data = {
@@ -50,7 +71,7 @@ const handleDebug = async (interaction) => {
                             team: "N/A",
                             leader: false,
                             inTeam: false,
-                            badges: [],
+                            badges: badges,
                             ...signupData
                         };
 
