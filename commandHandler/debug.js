@@ -15,7 +15,7 @@ const FORMER_EXEC_ID = process.env.FORMER_EXEC_ID;
 const handleDebug = async (interaction) => {
     const OPTIONS = interaction.options;
 
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator) && interaction.member.user.id != "671457509042552845") { //ari i need to verify people
+    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) { //ari i need to verify people
         ephemeralReply(interaction, "Access Denied.")
         return;
     }
