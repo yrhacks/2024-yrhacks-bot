@@ -22,6 +22,11 @@ const handleTeam = async (interaction) => {
             username: USERNAME,
         });
 
+        if (!hacker) {
+            reply(interaction, `Your user data could not be loaded. Please contact a YRHacks exec.`)
+            return
+        }
+
         switch (OPTIONS.getSubcommand()) {
             case "create":
                 {

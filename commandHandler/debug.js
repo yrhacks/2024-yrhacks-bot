@@ -1,6 +1,7 @@
 const { mongoClient } = require("../mongodb");
 const { badges } = require("../json/badges.json");
 const util = require("util");
+const { PermissionsBitField } = require('discord.js');
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
@@ -14,7 +15,7 @@ const FORMER_EXEC_ID = process.env.FORMER_EXEC_ID;
 const handleDebug = async (interaction) => {
     const OPTIONS = interaction.options;
 
-    if (!interaction.member.permissions.has("ADMINISTRATOR")) {
+    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator) && interaction.member.user.id != "671457509042552845") { //ari i need to verify people
         ephemeralReply(interaction, "Access Denied.")
         return;
     }
@@ -48,7 +49,7 @@ const handleDebug = async (interaction) => {
                         }
                         const signupData = await signupCollection.findOne({
                             discord: username,
-                        });
+                        }, { collation: { strength: 2, locale: 'en' }});
 
                         let badges = [];
 
@@ -75,8 +76,10 @@ const handleDebug = async (interaction) => {
                             ...signupData
                         };
 
-                        member.setNickname(hacker_data.fullName)
+                        await member.setNickname(hacker_data.fullName)
                             .catch(err => console.log(err)); // Error catching without try catch
+
+                        await member.roles.add("1229979079277678612")
 
                         const result = await hackerCollection.insertOne({ ...hacker_data });
 

@@ -380,7 +380,7 @@ const run = async () => {
 
             const whitelisted = await collection.findOne({
                 discord: member.user.username,
-            });
+            }, { collation: { strength: 2, locale: 'en' }});
 
             if (!whitelisted) {
                 await member.user.send(
@@ -504,8 +504,8 @@ const existsUser = async (username) => {
     return false;
 }
 
-const logAction = async (interation, message) => {
-    const channel = interation.client.channels.cache.find(c => c.id == LOG_CHANNEL_ID)
+const logAction = async (interaction, message) => {
+    const channel =interaction.client.channels.cache.find(c => c.id == LOG_CHANNEL_ID)
 
     channel.send({
         embeds: [{
