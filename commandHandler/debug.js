@@ -42,13 +42,6 @@ const handleDebug = async (interaction) => {
                         });
 
                         const { firstName, lastName } = signupData;
-                        let userBadges = []
-
-                        badges.forEach((b) => {
-                            if (b.users.includes(member.user.id)) {
-                                userBadges.push(b.badge_emoji)
-                            }
-                        });
 
                         const hacker_data = {
                             username: username,
@@ -57,7 +50,7 @@ const handleDebug = async (interaction) => {
                             team: "N/A",
                             leader: false,
                             inTeam: false,
-                            badges: userBadges,
+                            badges: [],
                             ...signupData
                         };
 
@@ -105,7 +98,7 @@ const handleDebug = async (interaction) => {
                 break;
             case "teamdata":
                 {
-                    const teamName = OPTIONS.get("team").value
+                    const teamName = OPTIONS.get("team").value;
 
                     const targetTeam = await teamCollection.findOne({
                         teamName: teamName,
@@ -127,11 +120,16 @@ const handleDebug = async (interaction) => {
                 break;
             case "addbadge":
                 {
-                    const user = OPTIONS.get("user").user.username
-                    const emoji = OPTIONS.get("badge").value
+                    const user = OPTIONS.get("user").user.username;
+                    const emoji = OPTIONS.get("badge").value;
 
-                    await hackerCollection.updateOne({ username: user }, { $push: { badges: emoji } })
-                    ephemeralReply(interaction, `Added badge!`)
+                    if (!Object.keys(badges).includes(emoji)) {
+                        ephemeralReply(interaction, "Invalid badge.");
+                        break;
+                    }
+
+                    await hackerCollection.updateOne({ username: user }, { $push: { badges: emoji } });
+                    ephemeralReply(interaction, `Added badge!`);
                 }
                 break;
 

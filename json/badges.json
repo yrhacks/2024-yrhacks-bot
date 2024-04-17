@@ -1,0 +1,16 @@
+{
+  "badges": {
+    "Executive": {
+      "badge_emoji": "<:yrhacks:1229303246951026698>",
+      "badge_desc": "YRHacks 2024 Exec."
+    },
+    "Former Exec": {
+      "badge_emoji": "<:yrhacksold:1229307081799110707>",
+      "badge_desc": "Former YRHacks Exec."
+    },
+    "Teacher": {
+      "badge_emoji": ":teacher:",
+      "badge_desc": "Teacher Supervisor."
+    }
+  }
+}

@@ -3,6 +3,8 @@ const { handleTeam } = require("./commandHandler/team");
 const { handleUser } = require("./commandHandler/user");
 const { handleDebug } = require("./commandHandler/debug");
 const { mongoClient } = require("./mongodb");
+
+const { badges } = require("./json/badges.json");
 const banList = require("./json/bannedwords.json");
 
 require("dotenv").config();
@@ -248,7 +250,8 @@ const run = async () => {
                             name: "badge",
                             description: "The badge to add",
                             type: ApplicationCommandOptionType.String,
-                            required: true
+                            required: true,
+                            autocomplete: true
                         }
                     ]
                 }
@@ -314,19 +317,23 @@ const run = async () => {
             const focusedValue = interaction.options.getFocused();
 
             if (interaction.options.getSubcommand() == "accept") {
-                const invited = await collection.find({ invited: interaction.user.username }).toArray()
-                const names = invited.map(t => t.teamName)
-                const filtered = names.filter((t) => t.startsWith(focusedValue))
+                const invited = await collection.find({ invited: interaction.user.username }).toArray();
+                const names = invited.map(t => t.teamName);
+                const filtered = names.filter((t) => t.startsWith(focusedValue));
 
                 await interaction.respond(
                     filtered.map(v => ({ name: v, value: v }))
                 )
-            } else {
-                const teams = await collection.distinct('teamName')
-                const filtered = teams.filter((t) => t.startsWith(focusedValue))
+            } else if (interaction.options.getSubcommand() == "view") {
+                const teams = await collection.distinct("teamName");
+                const filtered = teams.filter((t) => t.startsWith(focusedValue));
 
                 await interaction.respond(
                     filtered.map(v => ({ name: v, value: v }))
+                )
+            } else if (interaction.options.getSubcommand() == "addbadge") {
+                await interaction.respond(
+                    Object.keys(badges).map(v => ({ name: v, value: v }))
                 )
             }
 
@@ -417,6 +424,7 @@ const addUser = async (member) => {
                 team: "N/A",
                 leader: false,
                 inTeam: false,
+                badges: [],
                 ...signupData
             };
 

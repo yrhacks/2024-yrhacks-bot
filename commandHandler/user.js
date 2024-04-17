@@ -55,16 +55,14 @@ const handleUser = async (interaction) => {
                         break;
                     }
 
-                    let badgeMap = {}
-                    badges.forEach(b => {
-                        badgeMap[b.badge_emoji] = b
-                    });
-
-
                     const badgeStrings = hacker.badges.map((b) => {
-                        let bData = badgeMap[b]
+                        let bData = badges[b];
 
-                        return `${bData.badge_emoji} ${bData.badge_name} - ${bData.badge_desc}`
+                        if (!bData) {
+                            return;
+                        }
+
+                        return `${bData.badge_emoji} ${b} - ${bData.badge_desc}`;
                     });
 
                     let shsmField = null;
