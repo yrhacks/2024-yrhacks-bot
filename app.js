@@ -3,7 +3,6 @@ const { handleTeam } = require("./commandHandler/team");
 const { handleUser } = require("./commandHandler/user");
 const { handleDebug } = require("./commandHandler/debug");
 const { mongoClient } = require("./mongodb");
-const { badges } = require("./json/badges.json");
 const banList = require("./json/bannedwords.json");
 
 require("dotenv").config();
@@ -16,6 +15,7 @@ const HACKER_COLLECTION = process.env.HACKER_COLLECTION;
 const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
 const TEAM_COLLECTION = process.env.TEAM_COLLECTION;
 
+const SERVER_ID = process.env.SERVER_ID;
 const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
 
 const run = async () => {
@@ -281,6 +281,8 @@ const run = async () => {
     });
 
     client.on("messageCreate", (message) => {
+        if (message.guildId != SERVER_ID) return;
+
         if (message.author.bot) return false;
 
         let flagged = false;
@@ -303,6 +305,8 @@ const run = async () => {
     });
 
     client.on("interactionCreate", async interaction => {
+        if (interaction.guildId != SERVER_ID) return;
+
         if (interaction.isAutocomplete()) {
             const db = mongoClient.db(DATABASE);
             const collection = db.collection(TEAM_COLLECTION);
@@ -405,13 +409,6 @@ const addUser = async (member) => {
             });
 
             const { firstName, lastName } = signupData;
-            let userBadges = []
-
-            badges.forEach((b) => {
-                if (b.users.includes(member.user.id)) {
-                    userBadges.push(b.badge_emoji)
-                }
-            });
 
             const hacker_data = {
                 username: username,
@@ -420,7 +417,6 @@ const addUser = async (member) => {
                 team: "N/A",
                 leader: false,
                 inTeam: false,
-                badges: userBadges,
                 ...signupData
             };
 
