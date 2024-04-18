@@ -394,40 +394,55 @@ const handleTeam = async (interaction) => {
                 }
                 break;
             case "view":
-                const teamName = OPTIONS.get("team")?.value || hacker.team;
+                {
+                    const teamName = OPTIONS.get("team")?.value || hacker.team;
 
-                // User is not in a team & tried viewing own team
-                if (teamName == "N/A") {
-                    reply(interaction, `You are not currently in a team. Please join one or specify a team name to view.`);
-                    break;
-                }
+                    // User is not in a team & tried viewing own team
+                    if (teamName == "N/A") {
+                        reply(interaction, `You are not currently in a team. Please join one or specify a team name to view.`);
+                        break;
+                    }
 
-                const team = await teamCollection.findOne({
-                    teamName: teamName
-                });
-
-                if (!team) {
-                    reply(interaction, `The team **${teamName}** does not exist.`)
-                    break;
-                }
-
-                let { members } = team;
-
-                members = await Promise.all(members.map(async (username, index) => {
-                    const memberHacker = await hackerCollection.findOne({
-                        username: username
+                    const team = await teamCollection.findOne({
+                        teamName: teamName
                     });
 
-                    const user = interaction.client.users.cache.find(user => user.username == username);
-
-                    if (user) {
-                        return `${index == 0 ? ":crown:" : ":computer:"} <@${user.id}>`
+                    if (!team) {
+                        reply(interaction, `The team **${teamName}** does not exist.`)
+                        break;
                     }
-                    return `${index == 0 ? ":crown:" : ":computer:"} @${username}`
-                }))
 
-                reply(interaction, `**Team Name:** ${teamName}\n**Members:**\n${members.join("\n")}`)
+                    let { members } = team;
 
+                    members = await Promise.all(members.map(async (username, index) => {
+                        const memberHacker = await hackerCollection.findOne({
+                            username: username
+                        });
+
+                        const user = interaction.client.users.cache.find(user => user.username == username);
+
+                        if (user) {
+                            return `${index == 0 ? ":crown:" : ":computer:"} <@${user.id}>`
+                        }
+                        return `${index == 0 ? ":crown:" : ":computer:"} @${username}`
+                    }));
+
+                    reply(interaction, `**Team Name:** ${teamName}\n**Members:**\n${members.join("\n")}`)
+                }
+                break;
+            case "viewall":
+                {
+                    const collection = db.collection(TEAM_COLLECTION);
+                    const teams = await collection.find().toArray();
+
+                    let hackers = 0;
+                    const teamDisplay = teams.map((team, index) => {
+                        hackers += team.members.length;
+                        return `${index}. ${team.teamName} (${team.members.length}/4)`
+                    }).join("\n");
+
+                    reply(interaction, `${teamDisplay}\n\n**Total Hackers:** ${hackers}`);
+                }
                 break;
         }
 

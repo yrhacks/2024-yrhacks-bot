@@ -125,6 +125,11 @@ const run = async () => {
                         }
                     ]
                 },
+                {
+                    name: "viewall",
+                    description: "View all teams",
+                    type: ApplicationCommandOptionType.Subcommand,
+                },
             ],
         },
         {
