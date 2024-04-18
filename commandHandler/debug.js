@@ -11,6 +11,7 @@ const SIGNUPS_COLLECTION = process.env.SIGNUPS_COLLECTION;
 const EXEC_ID = process.env.EXEC_ID;
 const TEACHER_ID = process.env.TEACHER_ID;
 const FORMER_EXEC_ID = process.env.FORMER_EXEC_ID;
+const HACKER_ID = process.env.HACKER_ID;
 
 const handleDebug = async (interaction) => {
     const OPTIONS = interaction.options;
@@ -49,7 +50,12 @@ const handleDebug = async (interaction) => {
                         }
                         const signupData = await signupCollection.findOne({
                             discord: username,
-                        }, { collation: { strength: 2, locale: 'en' }});
+                        }, { collation: { strength: 2, locale: 'en' } });
+
+                        if (!signupData) {
+                            ephemeralReply(interaction, "User not in sign ups.");
+                            break;
+                        }
 
                         let badges = [];
 
@@ -79,7 +85,7 @@ const handleDebug = async (interaction) => {
                         await member.setNickname(hacker_data.fullName)
                             .catch(err => console.log(err)); // Error catching without try catch
 
-                        await member.roles.add("1229979079277678612")
+                        await member.roles.add(HACKER_ID);
 
                         const result = await hackerCollection.insertOne({ ...hacker_data });
 

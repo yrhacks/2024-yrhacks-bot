@@ -114,6 +114,11 @@ const handleTeam = async (interaction) => {
                         username: INVITED_USER.username
                     });
 
+                    if (!invitedHacker) {
+                        reply(interaction, `Invited user is not registered!`);
+                        break;
+                    }
+
                     if (team.members.includes(INVITED_USER.username)) {
                         reply(interaction, `**${invitedHacker.fullName}** is already part of team **${hacker.team}**!`)
                         break;
@@ -136,7 +141,7 @@ const handleTeam = async (interaction) => {
 
                     await INVITED_USER.send(`**${hacker.fullName}** has invited you to team **${hacker.team}**!
                     
-                    > Run \`/team accept ${hacker.team}\` to join the team.`).catch(err => console.log(err));;
+                    > Run \`/team accept ${hacker.team}\` to join the team.`).catch(err => console.log(`Can't message ${invitedHacker.fullName} (@${invitedHacker.username})`));
                 }
                 break;
             case "accept":
@@ -151,6 +156,11 @@ const handleTeam = async (interaction) => {
                     const team = await teamCollection.findOne({
                         teamName: teamName,
                     });
+
+                    if (!team) {
+                        reply(interaction, `Team does not exist!`)
+                        break;
+                    }
 
                     if (!team.invited.includes(hacker.username)) {
                         reply(interaction, `You do not have an invite to this team!`)
@@ -347,7 +357,7 @@ const handleTeam = async (interaction) => {
                     );
 
                     reply(interaction, `Renamed team from **${hacker.team}** to **${OPTIONS.get("name").value}**.`);
-                    logAction(interaction, `${hacker.fullName} renamed team **${hacker.team}** to **${OPTIONS.get("name").value}**`);
+                    logAction(interaction, `**${hacker.fullName}** renamed team **${hacker.team}** to **${OPTIONS.get("name").value}**`);
                 }
                 break;
             case "delete":
@@ -406,9 +416,14 @@ const handleTeam = async (interaction) => {
                 members = await Promise.all(members.map(async (username, index) => {
                     const memberHacker = await hackerCollection.findOne({
                         username: username
-                    })
+                    });
 
-                    return `${index == 0 ? ":crown:" : ":computer:"} <@${interaction.client.users.cache.find(user => user.username == username).id}>`
+                    const user = interaction.client.users.cache.find(user => user.username == username);
+
+                    if (user) {
+                        return `${index == 0 ? ":crown:" : ":computer:"} <@${user.id}>`
+                    }
+                    return `${index == 0 ? ":crown:" : ":computer:"} @${username}`
                 }))
 
                 reply(interaction, `**Team Name:** ${teamName}\n**Members:**\n${members.join("\n")}`)

@@ -308,13 +308,27 @@ const run = async () => {
 
         message.delete();
 
-        message.author.send("# Please refrain from using inappropriate language in the YRHacks Discord Server.");
+        message.author.send("# Please refrain from using inappropriate language in the YRHacks Discord Server.").catch(err => console.log(err));
 
         logAction(message, `<@${message.author.id}>'s message got flagged \`${message.content}\`.`);
     });
 
     client.on("interactionCreate", async interaction => {
-        if (interaction.guildId != SERVER_ID) return;
+        if (interaction.guildId != SERVER_ID) {
+            if (interaction.isCommand()) {
+                await interaction.reply({
+                    embeds: [
+                        {
+                            description: "You can only run commands in YRHacks Discord Server.",
+                            timestamp: new Date().toISOString(),
+                            color: "8076741"
+                        }
+                    ],
+                    ephemeral: true
+                }).catch(err => console.log(err));
+            }
+            return;
+        }
 
         if (interaction.isAutocomplete()) {
             const db = mongoClient.db(DATABASE);
@@ -328,33 +342,31 @@ const run = async () => {
                 const filtered = names.filter((t) => t.startsWith(focusedValue));
 
                 await interaction.respond(
-                    filtered.map(v => ({ name: v, value: v }))
-                )
+                    filtered.slice(0, 25).map(v => ({ name: v, value: v }))
+                ).catch(err => console.log(err));
             } else if (interaction.options.getSubcommand() == "view") {
                 const teams = await collection.distinct("teamName");
                 const filtered = teams.filter((t) => t.startsWith(focusedValue));
 
                 await interaction.respond(
-                    filtered.map(v => ({ name: v, value: v }))
-                )
+                    filtered.slice(0, 25).map(v => ({ name: v, value: v }))
+                ).catch(err => console.log(err));
             } else if (interaction.options.getSubcommand() == "addbadge") {
                 await interaction.respond(
                     Object.keys(badges).map(v => ({ name: v, value: v }))
-                )
+                ).catch(err => console.log(err));
             }
 
         }
 
         if (!interaction.isCommand()) return;
 
-        console.log(interaction.options);
-
         if (!(await existsUser(interaction.user.username))) {
             await addUser(interaction.member);
         }
 
         if (interaction.commandName === "ping") {
-            await interaction.reply("Pong! <@" + interaction.user.id + ">");
+            await interaction.reply("Pong! <@" + interaction.user.id + ">").catch(err => console.log(err));
             return;
         }
 
@@ -380,7 +392,7 @@ const run = async () => {
 
             const whitelisted = await collection.findOne({
                 discord: member.user.username,
-            }, { collation: { strength: 2, locale: 'en' }});
+            }, { collation: { strength: 2, locale: 'en' } });
 
             if (!whitelisted) {
                 await member.user.send(
@@ -505,7 +517,7 @@ const existsUser = async (username) => {
 }
 
 const logAction = async (interaction, message) => {
-    const channel =interaction.client.channels.cache.find(c => c.id == LOG_CHANNEL_ID)
+    const channel = interaction.client.channels.cache.find(c => c.id == LOG_CHANNEL_ID)
 
     channel.send({
         embeds: [{
