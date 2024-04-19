@@ -1,7 +1,7 @@
 const { mongoClient } = require("../mongodb");
 const { logAction } = require("../helper/helper");
-const { badges } = require("../json/badges.json")
-const banList = require("../json/bannedwords.json");
+const { badges } = require("../data/badges.json")
+const banList = require("../data/bannedwords.json");
 
 const DATABASE = process.env.DATABASE;
 const HACKER_COLLECTION = process.env.HACKER_COLLECTION;

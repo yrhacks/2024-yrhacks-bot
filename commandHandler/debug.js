@@ -1,5 +1,5 @@
 const { mongoClient } = require("../mongodb");
-const { badges } = require("../json/badges.json");
+const { badges } = require("../data/badges.json");
 const util = require("util");
 const { PermissionsBitField } = require('discord.js');
 
